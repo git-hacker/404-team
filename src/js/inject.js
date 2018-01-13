@@ -2,7 +2,7 @@
     var recognizer;
 
     function setupSpeechRecognition() {
-        var recognitionMode = "Interactive", languageOptions = "zh-CN", key = "ec5a64ec335043a2924cee0f839c6e3b";
+        var recognitionMode = "Dictation", languageOptions = "zh-CN", key = "ec5a64ec335043a2924cee0f839c6e3b";
         if (recognizer != null) {
             RecognizerStop(window.SDK, recognizer);
         }
@@ -100,6 +100,8 @@
                     break;
                 case "SpeechFragmentEvent" :
                     console.log(JSON.stringify(event.Result)); // check console for other information in result
+                    //执行指令
+                    executeInstruction(event.Result);
                     break;
                 case "SpeechEndDetectedEvent" :
                     UpdateStatus("Processing_Adding_Final_Touches");
@@ -137,12 +139,21 @@
     }
 
     var scrolldown_commands = ["向下", "往下", "往下滚", "向下滚"];
+    var fontSizeIncrease_commands = ["字体放大", "放大", "大"];
 
     function executeInstruction(result) {
         var command = result.Text;
         if (scrolldown_commands.indexOf(command) != -1) {
             window.scrollBy(0, 1000);
+        } else if (fontSizeIncrease_commands.indexOf(command) != -1) {
+            increase(2)
         }
+    }
+
+    function increase(multiplier) {
+        var fontSize = parseInt($("body").css("font-size"));
+        fontSize = fontSize + multiplier + "px";
+        $("body").css({'font-size': fontSize});
     }
 
     setupSpeechRecognition();

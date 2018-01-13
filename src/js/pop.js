@@ -96,9 +96,12 @@ document.addEventListener('DOMContentLoaded', () => {
             chrome.tabs.executeScript({
                 file: 'lib/speech.sdk.bundle.js'
             }, function (result) {
-                chrome.tabs.executeScript({
-                    file: 'js/inject.js'
-                });
+                chrome.tabs.executeScript({file: 'lib/jquery.min.js'},
+                    function (result) {
+                        chrome.tabs.executeScript({
+                            file: 'js/inject.js'
+                        });
+                    });
             });
         });
     });
