@@ -48,25 +48,6 @@ function getCurrentTabUrl(callback) {
 }
 
 /**
- * Change the background color of the current page.
- *
- * @param {string} color The new background color.
- */
-function changeBackgroundColor(color) {
-    // See https://developer.chrome.com/extensions/tabs#method-executeScript.
-    // chrome.tabs.executeScript allows us to programmatically inject JavaScript
-    // into a page. Since we omit the optional first argument "tabId", the script
-    // is inserted into the active tab of the current window, which serves as the
-    // default.
-    chrome.tabs.executeScript({
-        file: 'js/inject.js'
-    });
-    // chrome.tts.speak(
-    //     '你好，世界. hello world', {'lang': 'zh-CN'});
-
-}
-
-/**
  * Gets the saved background color for url.
  *
  * @param {string} url URL whose background color is to be retrieved.
@@ -112,145 +93,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ensure the background color is changed and saved when the dropdown
         // selection changes.
         start.addEventListener('click', () => {
-            setupSpeechRecognition()
+            chrome.tabs.executeScript({
+                file: 'lib/speech.sdk.bundle.js'
+            }, function (result) {
+                chrome.tabs.executeScript({
+                    file: 'js/inject.js'
+                });
+            });
         });
     });
 });
-var recognizer;
-function setupSpeechRecognition() {
-    var recognitionMode = "Interactive", languageOptions = "zh-CN", key = "ec5a64ec335043a2924cee0f839c6e3b";
-    if (recognizer != null) {
-        RecognizerStop(window.SDK, recognizer);
-    }
-    recognizer = RecognizerSetup(window.SDK, recognitionMode, languageOptions, SDK.SpeechResultFormat['Simple'], key);
-}
-
-// Stop the Recognition.
-function RecognizerStop(SDK, recognizer) {
-    // recognizer.AudioSource.Detach(audioNodeId) can be also used here. (audioNodeId is part of ListeningStartedEvent)
-    recognizer.AudioSource.TurnOff();
-}
-
-function RecognizerSetup(SDK, recognitionMode, language, format, subscriptionKey) {
-
-    switch (recognitionMode) {
-        case "Interactive" :
-            recognitionMode = SDK.RecognitionMode.Interactive;
-            break;
-        case "Conversation" :
-            recognitionMode = SDK.RecognitionMode.Conversation;
-            break;
-        case "Dictation" :
-            recognitionMode = SDK.RecognitionMode.Dictation;
-            break;
-        default:
-            recognitionMode = SDK.RecognitionMode.Interactive;
-    }
-
-    var recognizerConfig = new SDK.RecognizerConfig(
-        new SDK.SpeechConfig(
-            new SDK.Context(
-                new SDK.OS(navigator.userAgent, "Browser", null),
-                new SDK.Device("SpeechSample", "SpeechSample", "1.0.00000"))),
-        recognitionMode,
-        language, // Supported languages are specific to each recognition mode. Refer to docs.
-        format); // SDK.SpeechResultFormat.Simple (Options - Simple/Detailed)
-
-
-    var useTokenAuth = false;
-
-    var authentication = function () {
-        if (!useTokenAuth)
-            return new SDK.CognitiveSubscriptionKeyAuthentication(subscriptionKey);
-
-        var callback = function () {
-            var tokenDeferral = new SDK.Deferred();
-            try {
-                var xhr = new (XMLHttpRequest || ActiveXObject)('MSXML2.XMLHTTP.3.0');
-                xhr.open('GET', '/token', 1);
-                xhr.onload = function () {
-                    if (xhr.status === 200) {
-                        tokenDeferral.Resolve(xhr.responseText);
-                    } else {
-                        tokenDeferral.Reject('Issue token request failed.');
-                    }
-                };
-                xhr.send();
-            } catch (e) {
-                window.console && console.log(e);
-                tokenDeferral.Reject(e.message);
-            }
-            return tokenDeferral.Promise();
-        }
-
-        return new SDK.CognitiveTokenAuthentication(callback, callback);
-    }();
-
-    var files = document.getElementById('filePicker').files;
-    if (!files.length) {
-        return SDK.CreateRecognizer(recognizerConfig, authentication);
-    } else {
-        return SDK.CreateRecognizerWithFileAudioSource(recognizerConfig, authentication, files[0]);
-    }
-}
-
-function RecognizerStart(SDK, recognizer) {
-    recognizer.Recognize((event) => {
-        /*
-         Alternative syntax for typescript devs.
-         if (event instanceof SDK.RecognitionTriggeredEvent)
-         */
-        switch (event.Name) {
-            case "RecognitionTriggeredEvent" :
-                UpdateStatus("Initializing");
-                break;
-            case "ListeningStartedEvent" :
-                UpdateStatus("Listening");
-                break;
-            case "RecognitionStartedEvent" :
-                UpdateStatus("Listening_Recognizing");
-                break;
-            case "SpeechStartDetectedEvent" :
-                UpdateStatus("Listening_DetectedSpeech_Recognizing");
-                console.log(JSON.stringify(event.Result)); // check console for other information in result
-                break;
-            case "SpeechHypothesisEvent" :
-                UpdateRecognizedHypothesis(event.Result.Text, false);
-                console.log(JSON.stringify(event.Result)); // check console for other information in result
-                break;
-            case "SpeechFragmentEvent" :
-                UpdateRecognizedHypothesis(event.Result.Text, true);
-                console.log(JSON.stringify(event.Result)); // check console for other information in result
-                break;
-            case "SpeechEndDetectedEvent" :
-                OnSpeechEndDetected();
-                UpdateStatus("Processing_Adding_Final_Touches");
-                console.log(JSON.stringify(event.Result)); // check console for other information in result
-                break;
-            case "SpeechSimplePhraseEvent" :
-                UpdateRecognizedPhrase(JSON.stringify(event.Result, null, 3));
-                break;
-            case "SpeechDetailedPhraseEvent" :
-                UpdateRecognizedPhrase(JSON.stringify(event.Result, null, 3));
-                break;
-            case "RecognitionEndedEvent" :
-                OnComplete();
-                UpdateStatus("Idle");
-                console.log(JSON.stringify(event)); // Debug information
-                break;
-            default:
-                console.log(JSON.stringify(event)); // Debug information
-        }
-    })
-        .On(() => {
-                // The request succeeded. Nothing to do here.
-            },
-            (error) => {
-                console.error(error);
-            });
-}
-
-
-function UpdateStatus(status) {
-    document.getElementById("status").innerHTML = status;
-}
