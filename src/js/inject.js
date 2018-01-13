@@ -173,16 +173,14 @@
 
     function increaseFontSize(multiplier) {
         var fontSize = parseInt($("body").css("font-size"));
-        fontSize = fontSize + multiplier + "px";
-        $("body").css({'font-size': fontSize});
-        console.log($("body").css("font-size"))
+        $("body").css('font-size', Math.min(fontSize + multiplier, 60));
+        console.log($("body").css("font-size"));
     }
 
     function decreaseFontSize(multiplier) {
         var fontSize = parseInt($("body").css("font-size"));
-        fontSize = fontSize - multiplier + "px";
-        $("body").css({'font-size': fontSize});
-        console.log($("body").css("font-size"))
+        $("body").css('font-size', Math.max(12, fontSize - multiplier));
+        console.log($("body").css("font-size"));
     }
 
     // setupSpeechRecognition();
