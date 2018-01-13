@@ -1,3 +1,4 @@
+document.write()
 (function () {
     var recognizer;
 
@@ -97,6 +98,7 @@
                     console.log(JSON.stringify(event.Result)); // check console for other information in result
                     //执行指令
                     executeInstruction(event.Result);
+                    console.log('小陈陈的往下命令')
                     break;
                 case "SpeechFragmentEvent" :
                     console.log(JSON.stringify(event.Result)); // check console for other information in result
@@ -136,15 +138,21 @@
         console.log("current status", status);
     }
 
-    var scrolldown_commands = ["向下", "往下", "往下滚", "向下滚"];
+  var scrolldown_commands = ["向下", "往下", "往下滚", "向下滚", "下"];
+  console.log('小陈陈的往下命令')
 
-    function executeInstruction(result) {
-        var command = result.Text;
-        if (scrolldown_commands.indexOf(command) != -1) {
-            window.scrollBy(0, 1000);
-        }
+  function executeInstruction(result) {
+    var command = result.Text;
+    if (scrolldown_commands.indexOf(command) != -1) {
+      scroll(0, 1000)
     }
+  }
+
+  function scroll(x, y) {
+    window.scrollBy(x, y);
+  }
 
     setupSpeechRecognition();
     recognizerStart(window.SDK, recognizer);
 })();
+
