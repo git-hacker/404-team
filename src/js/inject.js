@@ -171,6 +171,7 @@
                 if (last.indexOf(keyword) !== -1) {
                     continue;// command has the same meaning ignored
                 }
+                last = keyword;
                 result.push(keyword);//otherwise...
             }
 
