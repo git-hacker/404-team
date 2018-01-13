@@ -180,7 +180,7 @@
 
     function decreaseFontSize(multiplier) {
         var fontSize = parseInt($("body").css("font-size"));
-        fontSize = fontSize + multiplier + "px";
+        fontSize = fontSize - multiplier + "px";
         $("body").css({'font-size': fontSize});
         console.log($("body").css("font-size"))
     }
