@@ -22,6 +22,7 @@
 
         this.recognizer;
         this.commands = {};
+        this.keyword_inputs = [];
 
         BabelFish.prototype.addCommands = function (commands) {
             if (Array.isArray(commands)) {
@@ -121,9 +122,9 @@
                         _this.UpdateRecognizedPhrase(JSON.stringify(event.Result, null, 3));
                         break;
                     case "RecognitionEndedEvent" :
+                        _this.RecognizerStart(window.SDK, recognizer);
                         _this.OnComplete();
                         _this.UpdateStatus("Idle");
-                        _this.RecognizerStart(window.SDK, recognizer);
                         console.log(JSON.stringify(event)); // Debug information
                         break;
                 }
@@ -144,11 +145,7 @@
                 return;
             }
             // $("#result").append("<div>" + text + "</div>");
-            var cmd = this.commands[text];
-            if (!cmd) {
-                return;
-            }
-            cmd.action.call(this, cmd.index, text);
+            this.keyword_inputs.push(text);
         }
 
         BabelFish.prototype.OnSpeechEndDetected = function () {
@@ -161,8 +158,30 @@
         }
 
         BabelFish.prototype.OnComplete = function () {
-//        startBtn.disabled = false;
-//        stopBtn.disabled = true;
+            if (!this.working) {
+                return;
+            }
+
+            var result = [];
+            var last = this.keyword_inputs.pop();
+            result.push(last);
+
+            while (this.keyword_inputs.length > 0) {
+                var keyword = this.keyword_inputs.pop();
+                if (last.indexOf(keyword) !== -1) {
+                    continue;// command has the same meaning ignored
+                }
+                result.push(keyword);//otherwise...
+            }
+
+            for (var i = 0; i < result.length; i++) {
+                var text = result[i];
+                var cmd = this.commands[text];
+                if (!cmd) {
+                    continue;
+                }
+                cmd.action(this, cmd.index, text);
+            }
         }
     };
 
@@ -188,7 +207,6 @@
 
     var mode = 'Interactive';
     var lang = 'zh-CN';
-    var format = 'Simple';
     var key = '18c3a34b7da34116a4761a896b7fcd79';
     var fish = new BabelFish({mode: mode, language: lang, key: key});
     fish.start();
@@ -198,17 +216,13 @@
             action: function (i, cmd) {
                 scroll();
             }
-        }
-    ]);
-    fish.addCommands([
+        },
         {
             index: ["字体放大", "放大", "大"],
             action: function (i, cmd) {
                 increaseFontSize(4);
             }
-        }
-    ]);
-    fish.addCommands([
+        },
         {
             index: ["字体减小", "减小", "小"],
             action: function (i, cmd) {
