@@ -1,162 +1,174 @@
 (function () {
-    var recognizer;
+    var BabelFish = function (opt) {
 
-    function setupSpeechRecognition() {
-        var recognitionMode = "Interactive", languageOptions = "zh-CN", key = "ec5a64ec335043a2924cee0f839c6e3b";
-        if (recognizer != null) {
-            RecognizerStop(window.SDK, recognizer);
+        if (typeof opt === 'undefined') {
+            opt = {};
         }
-        console.log("trying to setup speech recognition")
-        recognizer = RecognizerSetup(window.SDK, recognitionMode, languageOptions, SDK.SpeechResultFormat['Simple'], key);
-    }
-
-// Stop the Recognition.
-    function RecognizerStop(SDK, recognizer) {
-        // recognizer.AudioSource.Detach(audioNodeId) can be also used here. (audioNodeId is part of ListeningStartedEvent)
-        recognizer.AudioSource.TurnOff();
-    }
-
-    function RecognizerSetup(SDK, recognitionMode, language, format, subscriptionKey) {
-
-        switch (recognitionMode) {
-            case "Interactive" :
-                recognitionMode = SDK.RecognitionMode.Interactive;
-                break;
-            case "Conversation" :
-                recognitionMode = SDK.RecognitionMode.Conversation;
-                break;
-            case "Dictation" :
-                recognitionMode = SDK.RecognitionMode.Dictation;
-                break;
-            default:
-                recognitionMode = SDK.RecognitionMode.Interactive;
+        if (!opt.mode) {
+            opt.mode = "Interactive";
+        }
+        if (!opt.language) {
+            opt.language = "zh-CN";
+        }
+        if (!opt.key) {
+            opt.key = "18c3a34b7da34116a4761a896b7fcd79";
         }
 
-        var recognizerConfig = new SDK.RecognizerConfig(
-            new SDK.SpeechConfig(
-                new SDK.Context(
-                    new SDK.OS(navigator.userAgent, "Browser", null),
-                    new SDK.Device("SpeechSample", "SpeechSample", "1.0.00000"))),
-            recognitionMode,
-            language, // Supported languages are specific to each recognition mode. Refer to docs.
-            format); // SDK.SpeechResultFormat.Simple (Options - Simple/Detailed)
+        this.mode = opt.mode;
+        this.lang = opt.language;
+        this.format = "Simple";
+        this.key = opt.key;
+        this.working = false;
 
+        this.recognizer;
+        this.commands = {};
 
-        var useTokenAuth = false;
-
-        var authentication = function () {
-            if (!useTokenAuth)
-                return new SDK.CognitiveSubscriptionKeyAuthentication(subscriptionKey);
-
-            var callback = function () {
-                var tokenDeferral = new SDK.Deferred();
-                try {
-                    var xhr = new (XMLHttpRequest || ActiveXObject)('MSXML2.XMLHTTP.3.0');
-                    xhr.open('GET', '/token', 1);
-                    xhr.onload = function () {
-                        if (xhr.status === 200) {
-                            tokenDeferral.Resolve(xhr.responseText);
-                        } else {
-                            tokenDeferral.Reject('Issue token request failed.');
-                        }
-                    };
-                    xhr.send();
-                } catch (e) {
-                    window.console && console.log(e);
-                    tokenDeferral.Reject(e.message);
+        BabelFish.prototype.addCommands = function (commands) {
+            if (Array.isArray(commands)) {
+                for (var k = 0; k < commands.length; k++) {
+                    _addCommand(this.commands, commands[k]);
                 }
-                return tokenDeferral.Promise();
-            };
-
-            return new SDK.CognitiveTokenAuthentication(callback, callback);
-        }();
-        return SDK.CreateRecognizer(recognizerConfig, authentication);
-    }
-
-    function recognizerStart(SDK, recognizer) {
-        recognizer.Recognize((event) => {
-            /*
-             Alternative syntax for typescript devs.
-             if (event instanceof SDK.RecognitionTriggeredEvent)
-             */
-            switch (event.Name) {
-                case "RecognitionTriggeredEvent" :
-                    UpdateStatus("Initializing");
-                    break;
-                case "ListeningStartedEvent" :
-                    UpdateStatus("Listening");
-                    break;
-                case "RecognitionStartedEvent" :
-                    UpdateStatus("Listening_Recognizing");
-                    break;
-                case "SpeechStartDetectedEvent" :
-                    UpdateStatus("Listening_DetectedSpeech_Recognizing");
-                    console.log(JSON.stringify(event.Result)); // check console for other information in result
-                    break;
-                case "SpeechHypothesisEvent" :
-                    console.log(JSON.stringify(event.Result)); // check console for other information in result
-                    //执行指令
-                    executeInstruction(event.Result);
-                    console.log('小陈陈的往下命令')
-                    break;
-                case "SpeechFragmentEvent" :
-                    console.log(JSON.stringify(event.Result)); // check console for other information in result
-                    //执行指令
-                    executeInstruction(event.Result);
-                    break;
-                case "SpeechEndDetectedEvent" :
-                    UpdateStatus("Processing_Adding_Final_Touches");
-                    console.log(JSON.stringify(event.Result)); // check console for other information in result
-                    break;
-                case "SpeechSimplePhraseEvent" :
-                    break;
-                case "SpeechDetailedPhraseEvent" :
-                    console.log(JSON.stringify(event.Result, null, 3));
-                    break;
-                case "RecognitionEndedEvent" :
-                    OnComplete();
-                    UpdateStatus("Idle");
-                    console.log(JSON.stringify(event)); // Debug information
-                    break;
-                default:
-                    console.log(JSON.stringify(event)); // Debug information
+            } else {
+                _addCommand(this.commands, commands);
             }
-        })
-            .On(() => {
-                    // The request succeeded. Nothing to do here.
-                },
-                (error) => {
-                    console.error(error);
-                });
-    }
+        };
 
-    function OnComplete() {
-        // startBtn.disabled = false;
-        // stopBtn.disabled = true;
-    }
-
-    function UpdateStatus(status) {
-        console.log("current status", status);
-    }
-
-  var scrolldown_commands = ["向下", "往下", "往下滚", "向下滚", "下"];
-    var fontSizeIncrease_commands = ["字体放大", "放大", "大"];
-    var fontSizeDecrease_commands = ["字体减小", "减小", "小"];
-
-  function scroll() {
-    var top = $(window).scrollTop();
-    $("html,body").animate({scrollTop:top+500},300)
-  }
-    function executeInstruction(result) {
-        var command = result.Text;
-        if (scrolldown_commands.indexOf(command) != -1) {
-          scroll()
-          console.log('小陈陈说下的命令')
-        } else if (fontSizeIncrease_commands.indexOf(command) != -1) {
-            increaseFontSize(4)
-        } else if (fontSizeDecrease_commands.indexOf(command) != -1) {
-            decreaseFontSize(4)
+        function _addCommand(commands, cmd) {
+            for (var i = 0; i < cmd.index.length; i++) {
+                var keyword = cmd.index[i];
+                commands[keyword] = {index: i, action: cmd.action};
+            }
         }
+
+        BabelFish.prototype.start = function () {
+            if (this.working && this.recognizer) {
+                this.RecognizerStop(window.SDK, this.recognizer);
+            }
+            this.recognizer = this.RecognizerSetup(window.SDK, this.mode, this.lang, this.format, this.key);
+
+            this.working = true;
+            this.RecognizerStart(window.SDK, this.recognizer);
+        };
+
+        BabelFish.prototype.stop = function () {
+            if (this.working) {
+                this.RecognizerStop(window.SDK, this.recognizer);
+                this.working = false;
+                this.recognizer = null;
+                this.commands = {};
+            }
+        };
+
+        BabelFish.prototype.pause = function () {
+            this.working = false;
+        };
+
+        BabelFish.prototype.resume = function () {
+            this.working = true;
+        };
+
+        BabelFish.prototype.RecognizerSetup = function (SDK, recognitionMode, language, format, subscriptionKey) {
+            var recognizerConfig = new SDK.RecognizerConfig(
+                new SDK.SpeechConfig(
+                    new SDK.Context(
+                        new SDK.OS(navigator.userAgent, "Browser", null),
+                        new SDK.Device("SpeechSample", "SpeechSample", "1.0.00000"))),
+                recognitionMode, // SDK.RecognitionMode.Interactive  (Options - Interactive/Conversation/Dictation)
+                language, // Supported languages are specific to each recognition mode Refer to docs.
+                format); // SDK.SpeechResultFormat.Simple (Options - Simple/Detailed)
+
+            // Alternatively use SDK.CognitiveTokenAuthentication(fetchCallback, fetchOnExpiryCallback) for token auth
+            var authentication = new SDK.CognitiveSubscriptionKeyAuthentication(subscriptionKey);
+
+            return SDK.CreateRecognizer(recognizerConfig, authentication);
+        };
+
+        BabelFish.prototype.RecognizerStart = function (SDK, recognizer) {
+            var _this = this;
+            recognizer.Recognize(function (event) {
+                switch (event.Name) {
+                    case "RecognitionTriggeredEvent" :
+                        _this.UpdateStatus("Initializing");
+                        break;
+                    case "ListeningStartedEvent" :
+                        _this.UpdateStatus("Listening");
+                        break;
+                    case "RecognitionStartedEvent" :
+                        _this.UpdateStatus("Listening_Recognizing");
+                        break;
+                    case "SpeechStartDetectedEvent" :
+                        _this.UpdateStatus("Listening_DetectedSpeech_Recognizing");
+                        console.log(JSON.stringify(event.Result)); // check console for other information in result
+                        break;
+                    case "SpeechHypothesisEvent" :
+                        _this.UpdateRecognizedHypothesis(event.Result.Text);
+                        console.log(JSON.stringify(event.Result)); // check console for other information in result
+                        break;
+                    case "SpeechFragmentEvent" :
+                        _this.UpdateRecognizedHypothesis(event.Result.Text);
+                        console.log(JSON.stringify(event.Result)); // check console for other information in result
+                        break;
+                    case "SpeechEndDetectedEvent" :
+                        _this.OnSpeechEndDetected();
+                        _this.UpdateStatus("Processing_Adding_Final_Touches");
+                        console.log(JSON.stringify(event.Result)); // check console for other information in result
+                        break;
+                    case "SpeechSimplePhraseEvent" :
+                        _this.UpdateRecognizedPhrase(JSON.stringify(event.Result, null, 3));
+
+                        break;
+                    case "SpeechDetailedPhraseEvent" :
+                        _this.UpdateRecognizedPhrase(JSON.stringify(event.Result, null, 3));
+                        break;
+                    case "RecognitionEndedEvent" :
+                        _this.OnComplete();
+                        _this.UpdateStatus("Idle");
+                        _this.RecognizerStart(window.SDK, recognizer);
+                        console.log(JSON.stringify(event)); // Debug information
+                        break;
+                }
+            });
+        }
+
+        BabelFish.prototype.RecognizerStop = function (SDK, recognizer) {
+            // recognizer.AudioSource.Detach(audioNodeId) can be also used here. (audioNodeId is part of ListeningStartedEvent)
+            recognizer.AudioSource.TurnOff();
+        }
+
+        BabelFish.prototype.UpdateStatus = function (status) {
+//        $("#result").append("<div>status</div>");
+        }
+
+        BabelFish.prototype.UpdateRecognizedHypothesis = function (text) {
+            if (!this.working) {
+                return;
+            }
+            // $("#result").append("<div>" + text + "</div>");
+            var cmd = this.commands[text];
+            if (!cmd) {
+                return;
+            }
+            cmd.action.call(this, cmd.index, text);
+        }
+
+        BabelFish.prototype.OnSpeechEndDetected = function () {
+//        stopBtn.disabled = true;
+        }
+
+        BabelFish.prototype.UpdateRecognizedPhrase = function (json) {
+//        hypothesisDiv.innerHTML = "";
+//        phraseDiv.innerHTML += json + "\n";
+        }
+
+        BabelFish.prototype.OnComplete = function () {
+//        startBtn.disabled = false;
+//        stopBtn.disabled = true;
+        }
+    };
+
+    function scroll() {
+        var top = $(window).scrollTop();
+        $("html,body").animate({scrollTop: top + 500}, 300)
     }
 
     function increaseFontSize(multiplier) {
@@ -173,6 +185,37 @@
         console.log($("body").css("font-size"))
     }
 
-    setupSpeechRecognition();
-    recognizerStart(window.SDK, recognizer);
+    // setupSpeechRecognition();
+    // recognizerStart(window.SDK, recognizer);
+
+    var mode = 'Interactive';
+    var lang = 'zh-CN';
+    var format = 'Simple';
+    var key = '18c3a34b7da34116a4761a896b7fcd79';
+    var fish = new BabelFish({mode: mode, language: lang, key: key});
+    fish.start();
+    fish.addCommands([
+        {
+            index: ["向下", "往下", "往下滚", "向下滚", "下"],
+            action: function (i, cmd) {
+                scroll();
+            }
+        }
+    ]);
+    fish.addCommands([
+        {
+            index: ["字体放大", "放大", "大"],
+            action: function (i, cmd) {
+                increaseFontSize(4);
+            }
+        }
+    ]);
+    fish.addCommands([
+        {
+            index: ["字体减小", "减小", "小"],
+            action: function (i, cmd) {
+                decreaseFontSize(4);
+            }
+        }
+    ]);
 })();
