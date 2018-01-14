@@ -177,11 +177,12 @@
 
             for (var i = 0; i < result.length; i++) {
                 var text = result[i];
+
                 var cmd = this.commands[text];
                 if (!cmd) {
                     continue;
                 }
-                cmd.action(this, cmd.index, text);
+                cmd.action(cmd.index, text);
             }
         }
     };
@@ -214,6 +215,26 @@
     // setupSpeechRecognition();
     // recognizerStart(window.SDK, recognizer);
 
+    var cache_anchors = [];
+    var _current_select_index = -1;
+
+    function cache_anchor() {
+        cache_anchors = [];
+        _current_select_index = -1;
+
+        var _cache_anchor_index = 0;
+        $.each($("body  a"), function () {
+            $(this).attr("data-vocal-assistant-anchor", _cache_anchor_index);
+            cache_anchors.push({offset: $(this).offset().top, index: _cache_anchor_index++});
+        });
+        cache_anchors.sort(function (a1, a2) {
+            var o = a1.offset - a2.offset;
+            return o === 0 ? a1.index - a2.index : o;
+        });
+    }
+
+    cache_anchor();
+
     var mode = 'Interactive';
     var lang = 'zh-CN';
     var key = '18c3a34b7da34116a4761a896b7fcd79';
@@ -236,12 +257,74 @@
             index: ["大", "bigger"],
             action: function (i, cmd) {
                 increaseFontSize(4);
+                cache_anchor();
             }
         },
         {
             index: ["小", "smaller"],
             action: function (i, cmd) {
                 decreaseFontSize(4);
+                cache_anchor();
+            }
+        }, {
+            index: ["跳转"],
+            action: function (i, cmd) {
+                var _page_offset = $(document).scrollTop();
+                var _search_index = search(cache_anchors, _page_offset);
+                if (_search_index >= 0) {
+                    _current_select_index = _search_index;
+                    $("a[data-vocal-assistant-anchor='" + cache_anchors[_search_index].index + "']").css({
+                        "background-color": "#000",
+                        "color": "#fff"
+                    });
+                    // window.location.href = $("a[data-vocal-assistant-anchor='" + _search_index + "']").attr('href');
+                }
+                // $("a[data-vocal-assistant-anchor='14']").trigger('click');
+            }
+        },
+        {
+            index: ['上一个', '下一个'],
+            action: function (i, cmd) {
+                if (_current_select_index === -1) {
+                    return;
+                }
+                switch (i) {
+                    case 0:
+                        $("a[data-vocal-assistant-anchor='" + cache_anchors[_current_select_index].index + "']").css({
+                            "background-color": "#aaa",
+                            "color": "#000"
+                        });
+                        _current_select_index = Math.max(0, _current_select_index - 1);
+                        $("a[data-vocal-assistant-anchor='" + cache_anchors[_current_select_index].index + "']").css({
+                            "background-color": "#000",
+                            "color": "#fff"
+                        });
+                        break;
+                    case 1:
+                        $("a[data-vocal-assistant-anchor='" + cache_anchors[_current_select_index].index + "']").css({
+                            "background-color": "#aaa",
+                            "color": "#000"
+                        });
+                        _current_select_index = Math.min(cache_anchors.length - 1, _current_select_index + 1);
+                        $("a[data-vocal-assistant-anchor='" + cache_anchors[_current_select_index].index + "']").css({
+                            "background-color": "#000",
+                            "color": "#fff"
+                        });
+                        break;
+                }
+            }
+        },
+        {
+            index: ['返回', '后退'],
+            action: function (i, cmd) {
+                window.history.back();
+            }
+        }, {
+            index: ['确定', '是的', '是', '没错'],
+            action: function (i, cmd) {
+                if (_current_select_index !== -1) {
+                    window.location.href = $("a[data-vocal-assistant-anchor='" + cache_anchors[_current_select_index].index + "']").attr('href');
+                }
             }
         },
         {
@@ -251,4 +334,33 @@
             }
         }
     ]);
+
+    function search(arr, data) {
+        for (var i = 0; i < arr.length - 1; i++) {
+            if (arr[i].offset <= data && arr[i + 1].offset >= data) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    function binSearch(arr, data) {
+        var upperBound = arr.length - 1;
+        var lowerBound = 0;
+        while (lowerBound <= upperBound) {
+            var mid = Math.floor((lowerBound + upperBound) / 2);
+            if (arr[mid].offset < data) {
+                if (arr[mid + 1].offset && arr[mid + 1].offset > data) {
+
+                }
+                lowerBound = mid + 1;
+            } else if (arr[mid].offset > data) {
+                upperBound = mid - 1;
+            }
+            else {
+                return mid;
+            }
+        }
+        return -1;
+    }
 })();
