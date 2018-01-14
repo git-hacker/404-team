@@ -8,7 +8,7 @@
             opt.mode = "Interactive";
         }
         if (!opt.language) {
-          opt.language = "zh-CN";
+            opt.language = "zh-CN";
         }
         if (!opt.key) {
             opt.key = "18c3a34b7da34116a4761a896b7fcd79";
@@ -190,10 +190,11 @@
         var top = $(window).scrollTop();
         $("html,body").animate({scrollTop: top + 500}, 300)
     }
-  function scrollUp() {
-    var top = $(window).scrollTop();
-    $("html,body").animate({scrollTop: top - 500}, 300)
-  }
+
+    function scrollUp() {
+        var top = $(window).scrollTop();
+        $("html,body").animate({scrollTop: top - 500}, 300)
+    }
 
     function increaseFontSize(multiplier) {
         var fontSize = parseInt($("body").css("font-size"));
@@ -207,6 +208,9 @@
         console.log($("body").css("font-size"));
     }
 
+    function screenShot() {
+        window.postMessage({ type: "VOCAL_COMMAND", text: "SCREEN_SHOT" }, "*");
+    }
     // setupSpeechRecognition();
     // recognizerStart(window.SDK, recognizer);
 
@@ -217,27 +221,33 @@
     fish.start();
     fish.addCommands([
         {
-            index: ["下","down"],
+            index: ["下", "down"],
             action: function (i, cmd) {
                 scrollDown();
             }
         },
-      {
-        index: ["上","up"],
-        action: function (i, cmd) {
-          scrollUp();
-        }
-      },
         {
-            index: ["大","bigger"],
+            index: ["上", "up"],
+            action: function (i, cmd) {
+                scrollUp();
+            }
+        },
+        {
+            index: ["大", "bigger"],
             action: function (i, cmd) {
                 increaseFontSize(4);
             }
         },
         {
-            index: ["小","smaller"],
+            index: ["小", "smaller"],
             action: function (i, cmd) {
                 decreaseFontSize(4);
+            }
+        },
+        {
+            index:["截屏", "截图"],
+            action: function (i, cmd) {
+                screenShot()
             }
         }
     ]);

@@ -1,6 +1,6 @@
 {
   "name": "Page Plus",
-  "description" : "This extension allows the user to interact with the current page using voice control.",
+  "description": "This extension allows the user to interact with the current page using voice control.",
   "version": "1.0",
   "manifest_version": 2,
   "browser_action": {
@@ -8,9 +8,25 @@
     "default_icon": "img/logo.png",
     "default_title": "语音助理"
   },
+  "background": {
+    "scripts": ["js/background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*/*"
+      ],
+      "js": [
+        "lib/jquery.min.js",
+        "js/content.js"
+      ]
+    }
+  ],
   "permissions": [
     "activeTab",
     "storage",
-    "tts"
+    "tts",
+    "fontSettings",
+    "background"
   ]
 }

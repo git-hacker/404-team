@@ -92,6 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
         var stop = document.getElementById('stop');
         // Ensure the background color is changed and saved when the dropdown
         // selection changes.
+        if (url && url.startsWith("http:")) {
+            alert("暂只支持https的网站");
+            return;
+        }
         start.addEventListener('click', () => {
             chrome.tabs.executeScript({
                 file: 'lib/speech.sdk.bundle.js'
