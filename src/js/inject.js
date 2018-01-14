@@ -8,7 +8,7 @@
             opt.mode = "Interactive";
         }
         if (!opt.language) {
-            opt.language = "zh-CN";
+          opt.language = "zh-CN";
         }
         if (!opt.key) {
             opt.key = "18c3a34b7da34116a4761a896b7fcd79";
@@ -186,10 +186,14 @@
         }
     };
 
-    function scroll() {
+    function scrollDown() {
         var top = $(window).scrollTop();
         $("html,body").animate({scrollTop: top + 500}, 300)
     }
+  function scrollUp() {
+    var top = $(window).scrollTop();
+    $("html,body").animate({scrollTop: top - 500}, 300)
+  }
 
     function increaseFontSize(multiplier) {
         var fontSize = parseInt($("body").css("font-size"));
@@ -213,19 +217,25 @@
     fish.start();
     fish.addCommands([
         {
-            index: ["向下", "往下", "往下滚", "向下滚", "下"],
+            index: ["下","down"],
             action: function (i, cmd) {
-                scroll();
+                scrollDown();
             }
         },
+      {
+        index: ["上","up"],
+        action: function (i, cmd) {
+          scrollUp();
+        }
+      },
         {
-            index: ["字体放大", "放大", "大"],
+            index: ["大","bigger"],
             action: function (i, cmd) {
                 increaseFontSize(4);
             }
         },
         {
-            index: ["字体减小", "减小", "小"],
+            index: ["小","smaller"],
             action: function (i, cmd) {
                 decreaseFontSize(4);
             }
