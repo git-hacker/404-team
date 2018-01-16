@@ -1,4 +1,4 @@
-# ![PagePlus logo](https://github.com/git-hacker/404-team/blob/master/src/img/logo.png?raw=true)Page Plus
+# ![VoicePlus logo](https://github.com/git-hacker/404-team/blob/master/src/img/logo.png?raw=true)Voice Plus
 
 这里是黑客松参赛项目 `Page Plus` 主页。 `Page Plus` 旨在为人们提供新的网页浏览方式。通过语音控制，忘掉键盘鼠标的存在，你的声音就是命令。
 
