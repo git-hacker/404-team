@@ -1,6 +1,6 @@
 # ![VoicePlus logo](https://github.com/git-hacker/404-team/blob/master/src/img/logo.png?raw=true)Voice Plus
 
-这里是黑客松参赛项目 `Page Plus` 主页。 `Page Plus` 旨在为人们提供新的网页浏览方式。通过语音控制，忘掉键盘鼠标的存在，你的声音就是命令。
+这里是黑客松参赛项目 `Voice Plus` 主页。 `Voice Plus` 旨在为人们提供新的网页浏览方式。通过语音控制，忘掉键盘鼠标的存在，你的声音就是命令。
 
 # 设计初衷   
 
@@ -13,7 +13,7 @@ Alex ，孙pp，小陈陈
 
 # 使用方法  
 
- `Page Plus` 是一款 `Google Chrome` 浏览器插件，
+ `Voice Plus` 是一款 `Google Chrome` 浏览器插件，
 在 `chrome` 里面安装此插件，点击logo，即刻开启你的语音助理
 
 ## 向下滑动  
@@ -64,7 +64,5 @@ Alex ，孙pp，小陈陈
 * 智能选中功能，选中文字或者图片，并对其进行复制
 * 改进网页样式，如背景颜色，字体颜色等
 * 增加一些滑动动画，等待时间的动画效果
-
-* 增加语音输入功能，让用户可以在不动手指的情况下完成表单的输入喜爱过
 * 增加语音输入功能，让用户可以在不动手指的情况下完成表单的输入
 
