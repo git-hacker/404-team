@@ -5,7 +5,8 @@
 # 设计初衷   
 
 为手脚不便的人、腾不出手控制网页的人、正在吃饭喝水打毛衣的人、罹患懒癌的人、或者坐在电脑前双手忙着别的什么的人以及等等类似人士，
-提供页面操控功能的小助手
+提供页面操控功能的小助手  
+我们就是一群小天使😇，拯救懒癌，帮助弱势群体  
 
 # 使用方法  
 
@@ -64,11 +65,3 @@
 * 增加语音输入功能，让用户可以在不动手指的情况下完成表单的输入喜爱过
 * 增加语音输入功能，让用户可以在不动手指的情况下完成表单的输入
 
-```
-<video id="video" controls="" preload="none" poster="http://media.w3.org/2010/05/sintel/poster.png">
-      <source id="mp4" src="http://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4">
-      <source id="webm" src="http://media.w3.org/2010/05/sintel/trailer.webm" type="video/webm">
-      <source id="ogv" src="http://media.w3.org/2010/05/sintel/trailer.ogv" type="video/ogg">
-      <p>Your user agent does not support the HTML5 Video element.</p>
-    </video>
-    ```
