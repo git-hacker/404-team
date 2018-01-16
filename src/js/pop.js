@@ -105,6 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         chrome.tabs.executeScript({
                             file: 'js/inject.js'
                         });
+                        start.disabled = true;
+                        stop.disabled = false;
                     });
             });
         });
@@ -113,6 +115,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 code: 'if($INJECT_INSTANCE){' +
                 '$INJECT_INSTANCE.stop();' +
                 '}'
+            }, function (result) {
+                start.disabled = false;
+                stop.disabled = true;
             })
         });
     });
