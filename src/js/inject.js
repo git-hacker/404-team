@@ -1,4 +1,4 @@
-(function () {
+var $INJECT_INSTANCE = (function () {
     var BabelFish = function (opt) {
 
         if (typeof opt === 'undefined') {
@@ -53,6 +53,7 @@
 
         BabelFish.prototype.stop = function () {
             if (this.working) {
+                console.log("shutting down...");
                 this.RecognizerStop(window.SDK, this.recognizer);
                 this.working = false;
                 this.recognizer = null;
@@ -363,4 +364,6 @@
         }
         return -1;
     }
+
+    return fish;
 })();

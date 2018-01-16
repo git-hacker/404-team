@@ -108,5 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
             });
         });
+        stop.addEventListener('click', ()=> {
+            chrome.tabs.executeScript({
+                code: 'if($INJECT_INSTANCE){' +
+                '$INJECT_INSTANCE.stop();' +
+                '}'
+            })
+        });
     });
 });
